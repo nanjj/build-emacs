@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+set -x
 set -e
 
 . ./notify
@@ -11,15 +12,11 @@ CHANGES=emacs-builds/$BASE.changes
 cd `dirname $0`
 if [ ! -d emacs-git ]; then
     git clone $REPO emacs-git
-else
-    OLDREV=`GIT_DIR=emacs-git/.git git log -1 --oneline | cut -d' ' -f1`
-    GIT_DIR=emacs-git git pull
 fi
 NEWREV=`GIT_DIR=emacs-git/.git git log -1 --oneline | cut -d' ' -f1`
 mkdir -p emacs-builds
-GIT_DIR=emacs-git git log --oneline $OLDREV..$NEWREV  | tee $CHANGES
 DIR=emacs-git-${NEWREV}
 rm -rf $DIR
 mkdir $DIR
 cp -rf emacs-git/* $DIR
-build_emacs "$DIR" $BASE-$NEWREV || rm -f "$CHANGES"
+build_emacs "$DIR" $BASE-$NEWREV
