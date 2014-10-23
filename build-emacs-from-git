@@ -2,21 +2,21 @@
 set -x
 set -e
 
-. ./notify
-. ./build-emacs-functions
-
 REPO=git://git.savannah.gnu.org/emacs.git
-BASE=Emacs-`date +%F`
-CHANGES=emacs-builds/$BASE.changes
-
+BUILD_ID=`date +%Y-%m-%d_%H-%M-%S`
 cd `dirname $0`
 if [ ! -d emacs-git ]; then
     git clone $REPO emacs-git
 fi
 NEWREV=`GIT_DIR=emacs-git/.git git log -1 --oneline | cut -d' ' -f1`
-mkdir -p emacs-builds
-DIR=emacs-git-${NEWREV}
+DIR=emacs-${BUILD_ID}-${NEWREV}
 rm -rf $DIR
 mkdir $DIR
 cp -rf emacs-git/* $DIR
-build_emacs "$DIR" $BASE-$NEWREV
+(cd $DIR && ./autogen.sh)
+tar cjf $DIR.tar.bz2 --exclude '.git' $DIR
+rm -rf $DIR
+./build-emacs-from-tar $DIR.tar.bz2 nightly
+rm $DIR.tar.bz2
+./combine-and-package Emacs-${BUILD_ID}-${NEWREV}*.tar.bz2
+rm Emacs-${BUILD_ID}-${NEWREV}*.tar.bz2
